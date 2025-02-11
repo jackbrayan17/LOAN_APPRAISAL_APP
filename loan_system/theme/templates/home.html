@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {% for loan_type in loan_types %}
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-bold">{{ loan_type.1 }}</h2>
+        <a href="{% url 'loan_form' loan_type.0 %}" class="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded">{% trans "Apply" %}</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
