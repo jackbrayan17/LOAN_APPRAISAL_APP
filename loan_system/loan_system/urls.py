@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from institutions.views import institution_dashboard, deactivate_user
 from loans.views import branch_manager_dashboard, loan_officer_dashboard
 from loans.views import validate_loan, reject_loan, loan_details
+from institutions.views import loan_details, download_excel, download_pdf
 def redirect_to_login(request):
     # Redirect to the login page if not authenticated
     return redirect('account_login')  # Redirect to the allauth login page
@@ -31,7 +32,9 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),  # Django Allauth authentication
     path('loans/', include('loans.urls')),
     path('theme/', include('theme.urls')),
-    
+    path('loan/<int:loan_id>/details/', loan_details, name='loan_details'),
+    path('download/excel/', download_excel, name='download_excel'),
+    path('download/pdf/', download_pdf, name='download_pdf'),
     # Institution-related URLs
     path('institution/dashboard/', institution_dashboard, name='institution_dashboard'),
     path('institution/deactivate/<int:user_id>/', deactivate_user, name='deactivate_user'),

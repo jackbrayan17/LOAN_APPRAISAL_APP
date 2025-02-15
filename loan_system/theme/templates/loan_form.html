@@ -11,30 +11,19 @@
     </form>
 
     <!-- Modal -->
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center {% if not credit_score %}hidden{% endif %}">
         <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
             <h2 class="text-xl font-bold mb-4">Credit Score</h2>
-            <p id="modal-message"></p>
+            <p id="modal-message">Your credit score is {{ credit_score }}.</p>
             <button onclick="closeModal()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Close</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Function to display the modal
-    function showModal(message) {
-        document.getElementById('modal-message').innerText = message;
-        document.getElementById('modal').classList.remove('hidden');
-    }
-
     // Function to close the modal
     function closeModal() {
         document.getElementById('modal').classList.add('hidden');
     }
-
-    // Display the modal if a credit score is available
-    {% if credit_score %}
-        showModal("Your credit score is {{ credit_score }}.");
-    {% endif %}
 </script>
 {% endblock %}

@@ -59,54 +59,83 @@ def home(request):
     ]
     return render(request, 'home.html', {'loan_types': loan_types})
 
-from django.shortcuts import render, redirect
-from .forms import LoanForm
-from django.shortcuts import render, redirect
-from .models import LoanOfficer, Loan
-from .forms import LoanForm
-
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import LoanOfficer, Loan
 from .forms import LoanForm
 
 def loan_officer_dashboard(request, loan_type):
-    credit_score = None
-    loan_officer = LoanOfficer.objects.get(user=request.user)  # Get the Loan Officer object for the logged-in user
+    credit_score = None  # Default value if the form is not submitted
+    loan_officer = get_object_or_404(LoanOfficer, user=request.user)  # Get the Loan Officer for the logged-in user
 
     if request.method == 'POST':
         form = LoanForm(request.POST)
+        
         if form.is_valid():
-            # Extract form data from the submitted form
-            loan_amount = form.cleaned_data['loan_amount']
-            repayment_period = form.cleaned_data['repayment_period']
-            member_share = form.cleaned_data['member_share']
-            member_saving_account = form.cleaned_data['member_saving_account']
-            collateral_details = form.cleaned_data['collateral_details']
+            cleaned_data = form.cleaned_data
             
-            # Calculate the credit score based on the loan details (custom logic can be adjusted)
-            credit_score = min(100, int(
-                (loan_amount / 1000) +  # Higher loan amount reduces score
-                (repayment_period * 2) +  # Longer repayment period increases score
-                (member_share / 100) +  # Higher member share increases score
-                (member_saving_account / 1000)  # Higher savings increase score
-            ))
+            # Ensure all values are safely converted to integers (default to 0 if None)
+            def safe_int(value):
+                return int(value) if value is not None else 0
+            
+            # Assigning Scores to Each Section
+            character_score = (
+                (10 if cleaned_data.get('has_good_repayment_history') else 0) +
+                (10 if cleaned_data.get('has_good_reputation') else 5 if cleaned_data.get('has_good_reputation') == 'average' else 0) +
+                (5 if not cleaned_data.get('blacklisted') else 0) +
+                (10 if cleaned_data.get('community_reputation') else 5 if cleaned_data.get('community_reputation') == 'average' else 0) +
+                (5 if cleaned_data.get('community_leader') else 0) +
+                (5 if cleaned_data.get('community_duration') == 'more_than_2' else 0) +
+                (10 if cleaned_data.get('family_relationship') == 'good' else 5 if cleaned_data.get('family_relationship') == 'average' else 0) +
+                (10 if cleaned_data.get('workplace_relationship') == 'good' else 5 if cleaned_data.get('workplace_relationship') == 'average' else 0) +
+                (10 if cleaned_data.get('community_relationship') == 'good' else 5 if cleaned_data.get('community_relationship') == 'average' else 0)
+            )
 
-            # Save the loan application, but don’t commit yet
+            capacity_to_repay_score = (
+                (10 if cleaned_data.get('has_stable_job') else 0) +
+                (10 if cleaned_data.get('stable_job_duration') == 'more_than_5' else 5) +
+                (10 if cleaned_data.get('regular_income_frequency') == 'monthly' else 5 if cleaned_data.get('regular_income_frequency') == 'weekly' else 2) +
+                (10 if not cleaned_data.get('has_other_loans') else 0)
+            )
+
+            capital_status_score = (
+                (10 if cleaned_data.get('maintains_savings') else 0) +
+                (10 if cleaned_data.get('has_sufficient_collateral') else 0)
+            )
+
+            collateral_score = (
+                (5 if cleaned_data.get('spouse_approval') else 0)
+            )
+
+            credit_conditions_score = (
+                (5 if cleaned_data.get('business_is_legal') else 0)
+            )
+
+            # Calculate Total Credit Score
+            credit_score = (
+                character_score +
+                capacity_to_repay_score +
+                capital_status_score +
+                collateral_score +
+                credit_conditions_score
+            )
+
+            # Ensure the credit score does not exceed 100 (in case of overflow)
+            credit_score = min(credit_score, 100)
+
+            # Save the Loan application with calculated credit score
             loan = form.save(commit=False)
-            loan.loan_type = loan_type  # Set the loan type
-            loan.credit_score = credit_score  # Assign the calculated credit score
-            loan.loan_officer = loan_officer  # Directly assign the authenticated loan officer
+            loan.loan_type = loan_type  # Assign loan type to the loan instance
+            loan.credit_score = credit_score  # Assign calculated credit score
+            loan.loan_officer = loan_officer  # Assign the authenticated loan officer
             loan.save()  # Save the loan to the database
 
-            # After saving, render the form with the updated information
+            # Render the result to the same form page with the calculated score
             return render(request, 'loan_form.html', {'form': form, 'credit_score': credit_score})
-
+    
     else:
-        form = LoanForm(initial={'loan_type': loan_type})  # Initialize the form with the loan type
+        form = LoanForm(initial={'loan_type': loan_type})  # Initialize form with loan type
 
     return render(request, 'loan_form.html', {'form': form, 'credit_score': credit_score})
-
-
 from .models import Loan
 @login_required
 def branch_manager_dashboard(request):
