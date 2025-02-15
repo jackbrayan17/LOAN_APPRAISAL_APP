@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Branch Manager Dashboard</h1>
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <h2 class="text-xl font-bold mb-4">Pending Loans</h2>
+    <ul>
+        {% for loan in loans %}
+        <li class="mb-2">
+            {{ loan.customer.name }} - {{ loan.loan_type }} - {{ loan.amount }}
+            <a href="{% url 'validate_loan' loan.id %}" class="text-green-500 ml-4">Validate</a>
+            <a href="{% url 'reject_loan' loan.id %}" class="text-red-500 ml-4">Reject</a>
+            <a href="{% url 'print_loan' loan.id %}" class="text-blue-500 ml-4">Print</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

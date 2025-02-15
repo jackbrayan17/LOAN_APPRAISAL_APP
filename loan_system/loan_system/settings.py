@@ -108,12 +108,14 @@ NPM_BIN_PATH = 'C:\\Program Files\\nodejs\\npm.cmd'  # Update this path if neces
 
 # Allauth
 SITE_ID = 1
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'user_dashboard_redirect'
+LOGOUT_REDIRECT_URL = 'login'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'  # Redirect to home or login after logout
+AUTH_USER_MODEL = 'loans.User'  # Replace 'loans' with your app name
 
 # Crispy Forms
 CRISPY_TEMPLATE_PACK = 'tailwind'

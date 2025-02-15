@@ -1,5 +1,47 @@
 from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import login, authenticate
+from django.shortcuts import render, redirect
+from .forms import LoginForm
+
+def custom_login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                if user.is_loan_officer:
+                    return redirect('loan_officer_dashboard', loan_type='WITHIN_SAVINGS')  # Redirect to loan officer dashboard
+                elif user.is_branch_manager:
+                    return redirect('branch_manager_dashboard')  # Redirect to branch manager dashboard
+                else:
+                    return redirect('dashboard')  # Redirect to default dashboard for other users
+            else:
+                # Handle invalid login
+                return redirect('login')
+    else:
+        form = LoginForm()
+
+    return render(request, 'login.html', {'form': form})
+
+from django.shortcuts import render, redirect
+from .forms import LoanForm
+from .models import Loan
+
+def dashboard(request):
+    if request.user.is_authenticated:
+        if request.user.is_loan_officer:
+            return redirect('loan_officer_dashboard', loan_type='WITHIN_SAVINGS')
+        elif request.user.is_branch_manager:
+            return redirect('branch_manager_dashboard')
+        else:
+            return render(request, 'dashboard.html')
+    else:
+        return redirect('login')  # Redirect to login if the user is not logged in
+
 
 def home(request):
     loan_types = [
@@ -17,7 +59,7 @@ from .forms import LoanForm
 from django.shortcuts import render, redirect
 from .forms import LoanForm
 
-def loan_form(request, loan_type):
+def loan_officer_dashboard(request, loan_type):
     credit_score = None
     if request.method == 'POST':
         form = LoanForm(request.POST)
@@ -48,7 +90,11 @@ def loan_form(request, loan_type):
     else:
         form = LoanForm(initial={'loan_type': loan_type})
 
-    return render(request, 'loan_form.html', {'form': form, 'credit_score': credit_score})
+    return render(request, 'loans/loan_officer_dashboard.html', {'form': form, 'credit_score': credit_score})
 
 def dashboard(request):
     return render(request, 'dashboard.html')
+from .models import Loan
+def branch_manager_dashboard(request):
+    loans = Loan.objects.filter(status='SUBMITTED')
+    return render(request, 'loans/branch_manager_dashboard.html', {'loans': loans})
