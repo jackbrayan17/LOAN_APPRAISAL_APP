@@ -9,7 +9,7 @@ SECRET_KEY = 'your-secret-key-here'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','127.0.0.1','192.168.43.143']
 
 INSTALLED_APPS = [
     'django.contrib.admin',

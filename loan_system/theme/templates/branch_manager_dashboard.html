@@ -1,9 +1,40 @@
 {% extends 'base.html' %}
-{% load i18n %}
 
 {% block content %}
-<h1 class="text-2xl font-bold mb-4">{% trans "Dashboard" %}</h1>
+<h1 class="text-2xl font-bold mb-4">Branch Manager Dashboard</h1>
+
+<!-- Loan Officers List -->
 <div class="bg-white p-6 rounded-lg shadow-lg">
-    <p>{% trans "Welcome to BRANCH MANAGER dashboard!" %}</p>
+    <h2 class="text-xl font-bold mb-4">Loan Officers</h2>
+    <ul>
+        {% for officer in loan_officers %}
+        <li class="mb-2">
+            {{ officer.user.username }}
+            <a href="{% url 'deactivate_user' officer.user.id %}" class="text-red-500 ml-4">Deactivate</a>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
+
+<!-- Loan List for Validation/Approval -->
+<div class="bg-white p-6 rounded-lg shadow-lg mt-6">
+    <h2 class="text-xl font-bold mb-4">Loan Applications</h2>
+    <ul>
+        {% for loan in loans %}
+        <li class="mb-4">
+            <strong>{{ loan.member_full_name }}</strong> - {{ loan.loan_type }} - {{ loan.loan_amount }} CFA
+            <p>Status: {{ loan.status }}</p>
+
+            {% if loan.status == 'SUBMITTED' %}
+                <!-- Actions for Pending Loans -->
+                <a href="{% url 'validate_loan' loan.id %}" class="text-green-500 mr-4">Validate</a>
+                <a href="{% url 'reject_loan' loan.id %}" class="text-red-500">Reject</a>
+            {% endif %}
+            
+            <a href="{% url 'loan_details' loan.id %}" class="text-blue-500 ml-4">View Details</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
 {% endblock %}

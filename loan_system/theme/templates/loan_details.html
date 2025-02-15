@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Loan Details for {{ loan.member_full_name }}</h1>
+
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <p><strong>Loan Type:</strong> {{ loan.loan_type }}</p>
+    <p><strong>Loan Amount:</strong> {{ loan.loan_amount }} CFA</p>
+    <p><strong>Member Account:</strong> {{ loan.member_account_number }}</p>
+    <p><strong>Loan Purpose:</strong> {{ loan.loan_purpose }}</p>
+    <p><strong>Repayment Period:</strong> {{ loan.repayment_period }} months</p>
+    <p><strong>Status:</strong> {{ loan.status }}</p>
+    
+    <p><strong>Collateral Details:</strong> {{ loan.collateral_details }}</p>
+    <p><strong>Credit Score:</strong> {{ loan.credit_score }}</p>
+</div>
+
+{% endblock %}

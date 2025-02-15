@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from institutions.views import institution_dashboard, deactivate_user
 from loans.views import branch_manager_dashboard, loan_officer_dashboard
-
+from loans.views import validate_loan, reject_loan, loan_details
 def redirect_to_login(request):
     # Redirect to the login page if not authenticated
     return redirect('account_login')  # Redirect to the allauth login page
@@ -16,6 +16,9 @@ def user_dashboard_redirect(request):
             return redirect('home')
         elif request.user.is_branch_manager:
             return redirect('branch_manager_dashboard')
+        elif request.user.is_institution:
+            return redirect('institution_dashboard')
+        
         else:
             # Default redirect for non-specific users
             return redirect('home')  # A default dashboard view if needed
@@ -37,4 +40,7 @@ urlpatterns = [
     path('dashboard/', user_dashboard_redirect, name='user_dashboard_redirect'),
     path('branch-manager/dashboard/', branch_manager_dashboard, name='branch_manager_dashboard'),
     path('loan-officer/dashboard/', loan_officer_dashboard, name='loan_officer_dashboard'),
+    path('loan/validate/<int:loan_id>/', validate_loan, name='validate_loan'),
+    path('loan/reject/<int:loan_id>/', reject_loan, name='reject_loan'),
+    path('loan/details/<int:loan_id>/', loan_details, name='loan_details'),
 ]

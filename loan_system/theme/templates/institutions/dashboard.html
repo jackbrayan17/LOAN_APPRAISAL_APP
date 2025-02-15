@@ -2,6 +2,8 @@
 
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">Institution Dashboard</h1>
+
+<!-- Loan Officers List -->
 <div class="bg-white p-6 rounded-lg shadow-lg">
     <h2 class="text-xl font-bold mb-4">Loan Officers</h2>
     <ul>
@@ -12,5 +14,30 @@
         </li>
         {% endfor %}
     </ul>
+</div><br><br>
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <h2 class="text-xl font-bold mb-4">Branch Manager</h2>
+    <ul>
+        {% for officer in branch_manager %}
+        <li class="mb-2">
+            {{ officer.user.username }}
+            <a href="{% url 'deactivate_user' officer.user.id %}" class="text-red-500 ml-4">Deactivate</a>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
+
+
+<!-- Loans List -->
+<div class="bg-white p-6 rounded-lg shadow-lg mt-6">
+    <h2 class="text-xl font-bold mb-4">Loans</h2>
+    <ul>
+        {% for loan in loans %}
+        <li class="mb-2">
+            {{ loan.member_full_name }} - {{ loan.loan_type }} - {{ loan.loan_amount }} CFA
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
 {% endblock %}

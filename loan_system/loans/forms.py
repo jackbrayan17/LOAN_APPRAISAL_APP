@@ -1,7 +1,6 @@
 from django import forms
 from .models import Loan
 
-
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput)
@@ -12,7 +11,7 @@ class LoanForm(forms.ModelForm):
         fields = [
             'loan_type', 'member_account_number', 'member_full_name', 'member_share',
             'member_saving_account', 'loan_amount', 'loan_purpose', 'repayment_period',
-            'collateral_details', 'credit_score',
+            'collateral_details',
         ]
         widgets = {
             'loan_type': forms.Select(attrs={'class': 'form-control'}),
@@ -24,5 +23,12 @@ class LoanForm(forms.ModelForm):
             'loan_purpose': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'repayment_period': forms.NumberInput(attrs={'class': 'form-control'}),
             'collateral_details': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            # 'credit_score': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+    def save(self, commit=True):
+        loan = super().save(commit=False)
+        # Assign the authenticated loan officer automatically
+        loan.loan_officer = self.instance.loan_officer  # Automatically use the loan officer linked to the user
+        if commit:
+            loan.save()
+        return loan

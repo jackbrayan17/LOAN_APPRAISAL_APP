@@ -69,7 +69,7 @@ class Loan(models.Model):
     collateral_details = models.TextField(blank=True, null=True, verbose_name=_('Collateral Details'))
     credit_score = models.IntegerField(verbose_name=_('Credit Score'))
     status = models.CharField(max_length=20, default='SUBMITTED')
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    # customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     loan_officer = models.ForeignKey(LoanOfficer, on_delete=models.CASCADE)
 
     def __str__(self):
