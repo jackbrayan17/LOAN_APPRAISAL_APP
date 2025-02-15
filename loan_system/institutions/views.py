@@ -6,7 +6,12 @@ from django.contrib.auth.models import User
 from django.shortcuts import render
 from loans.models import LoanOfficer, BranchManager, Loan
 from django.contrib.auth.models import User
-
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from io import BytesIO
+import xlsxwriter
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from django.http import HttpResponse
 import openpyxl
 from django.http import HttpResponse
@@ -18,9 +23,9 @@ from loans.models import Loan
 def loan_details(request, loan_id):
     loan = Loan.objects.get(id=loan_id)
     data = {
-        'account_number': loan.account_number,
-        'account_name': loan.account_name,
-        'saving_amount': loan.saving_amount,
+        'account_number': loan.member_account_number,
+        'account_name': loan.member_full_name,
+        'saving_amount': loan.member_saving_account,
         'loan_amount': loan.loan_amount,
         'loan_type': loan.loan_type,
         'status': loan.status,
@@ -31,46 +36,135 @@ def loan_details(request, loan_id):
     }
     return JsonResponse(data)
 
-def download_pdf(request):
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="loans.pdf"'
 
-    c = canvas.Canvas(response, pagesize=letter)
-    c.drawString(100, 750, "Loans Report")
+# PDF Download View
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
 
-    # Add loan data to PDF
-    loans = Loan.objects.all()
-    y_position = 730
-    for loan in loans:
-        c.drawString(100, y_position, f"Account: {loan.account_number} | Name: {loan.account_name}")
-        y_position -= 20
-
-    c.showPage()
-    c.save()
-    return response
-
-def download_excel(request):
-    # Create Excel file
-    wb = openpyxl.Workbook()
-    sheet = wb.active
-    sheet.title = "Loans"
+def download_pdf(request, loan_id):
+    loan = get_object_or_404(Loan, id=loan_id)
     
-    # Define headers
-    headers = ["Account Number", "Account Name", "Saving Amount", "Loan Amount", "Loan Type", "Status", "Credit Score", "Approval Date", "Delay Days", "Loan Officer"]
-    sheet.append(headers)
+    # Generate PDF in memory
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    
+    # Title
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(100, 750, f"Loan Information Report for {loan.member_full_name}")
+    
+    # Loan Details
+    p.setFont("Helvetica", 12)
+    p.drawString(100, 720, f"Account Number: {loan.member_account_number}")
+    p.drawString(100, 700, f"Loan Amount: {loan.loan_amount} CFA")
+    p.drawString(100, 680, f"Loan Type: {loan.get_loan_type_display()}")
+    p.drawString(100, 660, f"Status: {loan.status}")
+    p.drawString(100, 640, f"Approval Date: {loan.approval_date or 'Not Approved'}")
+    p.drawString(100, 620, f"Delay Days: {loan.delay_days}")
 
-    # Add loan data to the sheet
-    loans = Loan.objects.all()
-    for loan in loans:
-        row = [loan.account_number, loan.account_name, loan.saving_amount, loan.loan_amount, loan.loan_type, loan.status, loan.credit_score, loan.approval_date, loan.delay_days, loan.loan_officer.user.username]
-        sheet.append(row)
+    # Appraisal Elements
+    p.drawString(100, 580, "Appraisal Elements:")
+    p.drawString(120, 560, f"Character Score: {loan.character_score}")
+    p.drawString(120, 540, f"Capacity to Repay Score: {loan.capacity_to_repay_score}")
+    p.drawString(120, 520, f"Capital Status Score: {loan.capital_status_score}")
+    p.drawString(120, 500, f"Collateral Score: {loan.collateral_score}")
+    p.drawString(120, 480, f"Credit Conditions Score: {loan.credit_conditions_score}")
+    p.drawString(120, 460, f"Total Appraisal Score: {loan.total_appraisal_score}")
+    
+    # Credit Score
+    p.drawString(100, 420, f"Credit Score: {loan.credit_score}")
+    p.drawString(100, 400, f"Score Label: {loan.score_label}")
 
-    # Set response headers for file download
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="loans.xlsx"'
-    wb.save(response)
+    # Additional Information
+    p.drawString(100, 360, "Additional Appraisal Information:")
+    p.drawString(120, 340, f"Has Good Repayment History: {'Yes' if loan.has_good_repayment_history else 'No'}")
+    p.drawString(120, 320, f"Has Good Reputation: {'Yes' if loan.has_good_reputation else 'No'}")
+    p.drawString(120, 300, f"Has Stable Job: {'Yes' if loan.has_stable_job else 'No'}")
+    p.drawString(120, 280, f"Regular Income Frequency: {loan.get_regular_income_frequency_display()}")
+    p.drawString(120, 260, f"Has Other Loans: {'Yes' if loan.has_other_loans else 'No'}")
+    p.drawString(120, 240, f"Maintains Savings: {'Yes' if loan.maintains_savings else 'No'}")
+    p.drawString(120, 220, f"Has Sufficient Collateral: {'Yes' if loan.has_sufficient_collateral else 'No'}")
+    p.drawString(120, 200, f"Spouse Approval: {'Yes' if loan.spouse_approval else 'No'}")
+    p.drawString(120, 180, f"Business is Legal: {'Yes' if loan.business_is_legal else 'No'}")
+
+    # Closing statement
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(100, 140, "This report is generated for financial analysis purposes.")
+    p.drawString(100, 120, "For any inquiries, please contact your loan officer.")
+
+    p.showPage()
+    p.save()
+    
+    buffer.seek(0)
+    
+    # Return PDF as response
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="loan_{loan.id}.pdf"'
     return response
+# Excel Download View
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from openpyxl import Workbook
 
+def download_excel(request, loan_id):
+    loan = get_object_or_404(Loan, id=loan_id)
+    
+    # Create an Excel workbook and sheet
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = f"Loan Report for {loan.member_full_name}"
+    
+    # Set column titles
+    columns = [
+        "Field", "Value"
+    ]
+    sheet.append(columns)
+
+    # Loan Details
+    sheet.append(["Account Number", loan.member_account_number])
+    sheet.append(["Loan Amount", f"{loan.loan_amount} CFA"])
+    sheet.append(["Loan Type", loan.get_loan_type_display()])
+    sheet.append(["Status", loan.status])
+    sheet.append(["Approval Date", loan.approval_date or 'Not Approved'])
+    sheet.append(["Delay Days", loan.delay_days])
+
+    # Appraisal Elements
+    sheet.append(["", ""])  # Empty row for spacing
+    sheet.append(["Appraisal Elements", ""])
+    sheet.append(["Character Score", loan.character_score])
+    sheet.append(["Capacity to Repay Score", loan.capacity_to_repay_score])
+    sheet.append(["Capital Status Score", loan.capital_status_score])
+    sheet.append(["Collateral Score", loan.collateral_score])
+    sheet.append(["Credit Conditions Score", loan.credit_conditions_score])
+    sheet.append(["Total Appraisal Score", loan.total_appraisal_score])
+
+    # Credit Score
+    sheet.append(["Credit Score", loan.credit_score])
+    sheet.append(["Score Label", loan.score_label])
+
+    # Additional Information
+    sheet.append(["", ""])  # Empty row for spacing
+    sheet.append(["Additional Appraisal Information", ""])
+    sheet.append(["Has Good Repayment History", "Yes" if loan.has_good_repayment_history else "No"])
+    sheet.append(["Has Good Reputation", "Yes" if loan.has_good_reputation else "No"])
+    sheet.append(["Has Stable Job", "Yes" if loan.has_stable_job else "No"])
+    sheet.append(["Regular Income Frequency", loan.get_regular_income_frequency_display()])
+    sheet.append(["Has Other Loans", "Yes" if loan.has_other_loans else "No"])
+    sheet.append(["Maintains Savings", "Yes" if loan.maintains_savings else "No"])
+    sheet.append(["Has Sufficient Collateral", "Yes" if loan.has_sufficient_collateral else "No"])
+    sheet.append(["Spouse Approval", "Yes" if loan.spouse_approval else "No"])
+    sheet.append(["Business is Legal", "Yes" if loan.business_is_legal else "No"])
+
+    # Save the workbook to a BytesIO stream
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="loan_{loan.id}.xlsx"'
+    
+    # Write the workbook to the response
+    workbook.save(response)
+    
+    return response
 
 def deactivate_user(request, user_id):
     user = get_object_or_404(User, id=user_id)

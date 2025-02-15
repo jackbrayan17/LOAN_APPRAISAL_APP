@@ -79,15 +79,15 @@ def loan_officer_dashboard(request, loan_type):
             
             # Assigning Scores to Each Section
             character_score = (
-                (10 if cleaned_data.get('has_good_repayment_history') else 0) +
-                (10 if cleaned_data.get('has_good_reputation') else 5 if cleaned_data.get('has_good_reputation') == 'average' else 0) +
+                (5 if cleaned_data.get('has_good_repayment_history') else 0) +
+                (5 if cleaned_data.get('has_good_reputation') else 2 if cleaned_data.get('has_good_reputation') == 'average' else 0) +
                 (5 if not cleaned_data.get('blacklisted') else 0) +
-                (10 if cleaned_data.get('community_reputation') else 5 if cleaned_data.get('community_reputation') == 'average' else 0) +
-                (5 if cleaned_data.get('community_leader') else 0) +
-                (5 if cleaned_data.get('community_duration') == 'more_than_2' else 0) +
-                (10 if cleaned_data.get('family_relationship') == 'good' else 5 if cleaned_data.get('family_relationship') == 'average' else 0) +
-                (10 if cleaned_data.get('workplace_relationship') == 'good' else 5 if cleaned_data.get('workplace_relationship') == 'average' else 0) +
-                (10 if cleaned_data.get('community_relationship') == 'good' else 5 if cleaned_data.get('community_relationship') == 'average' else 0)
+                (5 if cleaned_data.get('community_reputation') else 2 if cleaned_data.get('community_reputation') == 'average' else 0) +
+                (2 if cleaned_data.get('community_leader') else 0) +
+                (2 if cleaned_data.get('community_duration') == 'more_than_2' else 1) +
+                (1 if cleaned_data.get('family_relationship') == 'good' else 0.5 if cleaned_data.get('family_relationship') == 'average' else 0) +
+                (1 if cleaned_data.get('workplace_relationship') == 'good' else 0.5 if cleaned_data.get('workplace_relationship') == 'average' else 0) +
+                (1 if cleaned_data.get('community_relationship') == 'good' else 0.5 if cleaned_data.get('community_relationship') == 'average' else 0)
             )
 
             capacity_to_repay_score = (
@@ -98,8 +98,8 @@ def loan_officer_dashboard(request, loan_type):
             )
 
             capital_status_score = (
-                (10 if cleaned_data.get('maintains_savings') else 0) +
-                (10 if cleaned_data.get('has_sufficient_collateral') else 0)
+                (5 if cleaned_data.get('maintains_savings') else 0) +
+                (5 if cleaned_data.get('has_sufficient_collateral') else 0)
             )
 
             collateral_score = (
@@ -120,7 +120,7 @@ def loan_officer_dashboard(request, loan_type):
             )
 
             # Ensure the credit score does not exceed 100 (in case of overflow)
-            credit_score = min(credit_score, 100)
+            # credit_score = min(credit_score, 100)
 
             # Save the Loan application with calculated credit score
             loan = form.save(commit=False)

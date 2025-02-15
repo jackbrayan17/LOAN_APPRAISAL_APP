@@ -32,8 +32,12 @@
 
 
 <!-- Loans Table -->
-<div class="bg-white p-6 rounded-lg shadow-lg mt-6">
+<div class="flex justify-between bg-white p-6 rounded-lg shadow-lg mb-6">
     <h2 class="text-xl font-bold">Loans <span style="color: grey;">{{ loans|length }}</span></h2>
+</div>
+
+<!-- Loans Table -->
+<div class="bg-white p-6 rounded-lg shadow-lg mt-6">
     <table class="min-w-full table-auto">
         <thead>
             <tr class="border-b">
@@ -47,14 +51,15 @@
                 <th class="px-4 py-2 text-left">Approval Date</th>
                 <th class="px-4 py-2 text-left">Delay Days</th>
                 <th class="px-4 py-2 text-left">Loan Officer</th>
+                <th class="px-4 py-2 text-left">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for loan in loans %}
             <tr class="border-b cursor-pointer" data-loan-id="{{ loan.id }}">
-                <td class="px-4 py-2">{{ loan.account_number }}</td>
-                <td class="px-4 py-2">{{ loan.account_name }}</td>
-                <td class="px-4 py-2">{{ loan.saving_amount }} CFA</td>
+                <td class="px-4 py-2">{{ loan.member_account_number }}</td>
+                <td class="px-4 py-2">{{ loan.member_full_name }}</td>
+                <td class="px-4 py-2">{{ loan.member_saving_account }} CFA</td>
                 <td class="px-4 py-2">{{ loan.loan_amount }} CFA</td>
                 <td class="px-4 py-2">{{ loan.loan_type }}</td>
                 <td class="px-4 py-2">{{ loan.status }}</td>
@@ -62,73 +67,17 @@
                 <td class="px-4 py-2">{{ loan.approval_date }}</td>
                 <td class="px-4 py-2">{{ loan.delay_days }}</td>
                 <td class="px-4 py-2">{{ loan.loan_officer.user.username }}</td>
+                <td class="px-4 py-2">
+                    <!-- Download Buttons -->
+                    <a href="{% url 'download_pdf' loan.id %}" class="text-blue-600 hover:text-blue-800 mr-4">Download PDF</a>
+                    <a href="{% url 'download_excel' loan.id %}" class="text-blue-600 hover:text-blue-800">Download Excel</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-
-<!-- Modal for Loan Details -->
-<div class="modal fade hidden" id="loanModal" tabindex="-1" aria-labelledby="loanModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="loanModalLabel">Loan Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p><strong>Account Number:</strong> <span id="modal-account-number"></span></p>
-                <p><strong>Account Name:</strong> <span id="modal-account-name"></span></p>
-                <p><strong>Saving Amount:</strong> <span id="modal-saving-amount"></span></p>
-                <p><strong>Loan Amount:</strong> <span id="modal-loan-amount"></span></p>
-                <p><strong>Loan Type:</strong> <span id="modal-loan-type"></span></p>
-                <p><strong>Status:</strong> <span id="modal-status"></span></p>
-                <p><strong>Credit Score:</strong> <span id="modal-credit-score"></span></p>
-                <p><strong>Approval Date:</strong> <span id="modal-approval-date"></span></p>
-                <p><strong>Delay Days:</strong> <span id="modal-delay-days"></span></p>
-                <p><strong>Loan Officer:</strong> <span id="modal-loan-officer"></span></p>
-            </div>
-            <div class="modal-footer">
-                <a href="#" id="download-excel" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">Download as Excel</a>
-                <a href="#" id="download-pdf" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Download as PDF</a>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const loanModal = document.getElementById('loanModal');
-    const loanRows = document.querySelectorAll('tr[data-loan-id]');
-
-    loanRows.forEach(row => {
-        row.addEventListener('click', () => {
-            const loanId = row.getAttribute('data-loan-id');
-            
-            fetch(`/loan/${loanId}/details/`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('modal-account-number').textContent = data.account_number;
-                    document.getElementById('modal-account-name').textContent = data.account_name;
-                    document.getElementById('modal-saving-amount').textContent = data.saving_amount + ' CFA';
-                    document.getElementById('modal-loan-amount').textContent = data.loan_amount + ' CFA';
-                    document.getElementById('modal-loan-type').textContent = data.loan_type;
-                    document.getElementById('modal-status').textContent = data.status;
-                    document.getElementById('modal-credit-score').textContent = data.credit_score;
-                    document.getElementById('modal-approval-date').textContent = data.approval_date;
-                    document.getElementById('modal-delay-days').textContent = data.delay_days;
-                    document.getElementById('modal-loan-officer').textContent = data.loan_officer;
-
-                    document.getElementById('download-excel').href = `/download/loan/${loanId}/excel/`;
-                    document.getElementById('download-pdf').href = `/download/loan/${loanId}/pdf/`;
-
-                    const modal = new bootstrap.Modal(loanModal);
-                    modal.show();
-                });
-        });
-    });
-</script>
 {% endblock %}
 
 {% block scripts %}

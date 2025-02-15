@@ -33,8 +33,8 @@ urlpatterns = [
     path('loans/', include('loans.urls')),
     path('theme/', include('theme.urls')),
     path('loan/<int:loan_id>/details/', loan_details, name='loan_details'),
-    path('download/excel/', download_excel, name='download_excel'),
-    path('download/pdf/', download_pdf, name='download_pdf'),
+    path('download/excel/<int:loan_id>/', download_excel, name='download_excel'),
+    path('download/pdf/<int:loan_id>/', download_pdf, name='download_pdf'),
     # Institution-related URLs
     path('institution/dashboard/', institution_dashboard, name='institution_dashboard'),
     path('institution/deactivate/<int:user_id>/', deactivate_user, name='deactivate_user'),

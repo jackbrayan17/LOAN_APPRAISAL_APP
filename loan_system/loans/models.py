@@ -55,6 +55,11 @@ class Customer(models.Model):
 # Loan Model
 
 
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+from datetime import timedelta
+from django.utils.timezone import now
+
 class Loan(models.Model):
     LOAN_TYPES = [
         ('WITHIN_SAVINGS', _('Loans within Savings')),
@@ -73,6 +78,7 @@ class Loan(models.Model):
     repayment_period = models.IntegerField(verbose_name=_('Repayment Period (Months)'))
     collateral_details = models.TextField(blank=True, null=True, verbose_name=_('Collateral Details'))
     credit_score = models.IntegerField(default=0, verbose_name=_('Credit Score'))
+    score_label = models.CharField(max_length=100, blank=True, verbose_name=_('Score Label'))
     status = models.CharField(max_length=20, default='SUBMITTED')
     loan_officer = models.ForeignKey(LoanOfficer, on_delete=models.CASCADE)
     approval_date = models.DateField(blank=True, null=True, verbose_name=_('Approval Date'))
@@ -86,11 +92,63 @@ class Loan(models.Model):
     credit_conditions_score = models.IntegerField(default=0, verbose_name=_('Credit Conditions Score (5 Points)'))
     total_appraisal_score = models.IntegerField(default=0, verbose_name=_('Total Appraisal Score (100 Points)'))
 
+    # New fields from appraisal elements
+    has_good_repayment_history = models.BooleanField(default=False, verbose_name="Has a good repayment history")
+    has_good_reputation = models.BooleanField(default=False, verbose_name="Has a good reputation in the community")
+    has_stable_job = models.BooleanField(default=False, verbose_name="Has a stable job")
+    regular_income_frequency = models.CharField(
+        max_length=10,
+        choices=[('monthly', 'Monthly'), ('weekly', 'Weekly'), ('daily', 'Daily')],
+        verbose_name="Regular Income Frequency"
+    )
+    has_other_loans = models.BooleanField(default=False, verbose_name="Has other active loans")
+    maintains_savings = models.BooleanField(default=False, verbose_name="Maintains regular savings")
+    has_sufficient_collateral = models.BooleanField(default=False, verbose_name="Has sufficient collateral")
+    spouse_approval = models.BooleanField(default=False, verbose_name="Spouse has approved the loan")
+    business_is_legal = models.BooleanField(default=False, verbose_name="Business is legal and safe")
+
+    # Additional appraisal elements
+    proven_record_mfi = models.BooleanField(default=False, verbose_name="Proven record of repayment to MFI")
+    proven_record_other_institutions = models.BooleanField(default=False, verbose_name="Proven record of repayment to other institutions")
+    blacklisted = models.BooleanField(default=False, verbose_name="Has been blacklisted")
+    community_reputation = models.BooleanField(default=False, verbose_name="Good reputation in the community")
+    community_leader = models.BooleanField(default=False, verbose_name="Community leader or commands respect")
+    community_duration = models.CharField(
+        max_length=20,
+        choices=[('less_than_2', 'Less than 2 years'), ('more_than_2', 'More than 2 years')],
+        verbose_name="Duration in the community"
+    )
+    family_relationship = models.CharField(
+        max_length=10,
+        choices=[('good', 'Good'), ('average', 'Average'), ('poor', 'Poor')],
+        verbose_name="Relationship with family"
+    )
+    workplace_relationship = models.CharField(
+        max_length=10,
+        choices=[('good', 'Good'), ('average', 'Average'), ('poor', 'Poor')],
+        verbose_name="Relationship with colleagues"
+    )
+    community_relationship = models.CharField(
+        max_length=10,
+        choices=[('good', 'Good'), ('average', 'Average'), ('poor', 'Poor')],
+        verbose_name="Relationship with community"
+    )
+    stable_job_duration = models.CharField(
+        max_length=20,
+        choices=[('less_than_5', 'Less than 5 years'), ('more_than_5', 'More than 5 years')],
+        verbose_name="Stable job duration"
+    )
+    income_matches_amortization = models.BooleanField(default=False, verbose_name="Regular income matches loan amortization schedule")
+    loan_duration_matches_job = models.BooleanField(default=False, verbose_name="Loan duration matches job/business")
+    collateral_convertible = models.BooleanField(default=False, verbose_name="Collateral can easily be converted to cash")
+    collateral_value_exceeds_loan = models.BooleanField(default=False, verbose_name="Collateral value exceeds loan amount")
+    collateral_free_from_lien = models.BooleanField(default=False, verbose_name="Collateral free from encumbrances/lien")
+    co_maker_pledge = models.BooleanField(default=False, verbose_name="Co-maker willing to pledge savings/shares")
+    spouse_consent = models.BooleanField(default=False, verbose_name="Spouse has given consent for the loan")
+    job_health_hazards = models.BooleanField(default=False, verbose_name="Job poses no health hazards")
+
     def calculate_total_score(self):
-        """
-        Calculates the total appraisal score based on different criteria.
-        Ensures that the credit score does not exceed 100.
-        """
+        """Calculates the total appraisal score based on different criteria."""
         self.total_appraisal_score = (
             self.character_score +
             self.capacity_to_repay_score +
@@ -99,26 +157,33 @@ class Loan(models.Model):
             self.credit_conditions_score
         )
         self.credit_score = min(self.total_appraisal_score, 100)  # Cap the credit score at 100
+        self.score_label = self.get_score_label()  # Update score label
         self.save()
 
     def calculate_delay_days(self):
-        """
-        Calculates the number of delay days based on microfinance logic.
-        The delay days are determined by comparing the estimated repayment date 
-        with the actual date. If the repayment is overdue, the delay days reflect 
-        the number of days past the due date.
-        """
+        """Calculates the number of delay days based on microfinance logic."""
         if self.approval_date:
             estimated_repayment_date = self.approval_date + timedelta(days=self.repayment_period * 30)
             actual_repayment_date = now().date()
             
-            # If the loan is overdue, calculate delay days
             if actual_repayment_date > estimated_repayment_date:
                 self.delay_days = (actual_repayment_date - estimated_repayment_date).days
             else:
-                self.delay_days = 0  # No delay if the repayment is on time
+                self.delay_days = 0
             
             self.save()
 
+    def get_score_label(self):
+        """Returns the score label based on the credit score."""
+        if self.credit_score <= 70:
+            return "Disapproved, high probability of failure"
+        elif 71 <= self.credit_score <= 80:
+            return "Approved but requires collateral, co-makers, savings, and close supervision"
+        elif 81 <= self.credit_score <= 90:
+            return "Approved but needs collateral and close supervision"
+        elif 91 <= self.credit_score <= 100:
+            return "Approved with or without collateral"
+        return "Unknown"
+
     def __str__(self):
-        return f"{self.member_full_name} - {self.loan_type}"
+        return f"{self.member_full_name} - {self.loan_type} (Score: {self.credit_score}, Label: {self.score_label})"
