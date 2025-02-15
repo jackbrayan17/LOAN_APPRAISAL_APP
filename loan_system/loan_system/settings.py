@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from django.utils.translation import gettext_lazy as _
+from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -108,7 +109,7 @@ NPM_BIN_PATH = 'C:\\Program Files\\nodejs\\npm.cmd'  # Update this path if neces
 
 # Allauth
 SITE_ID = 1
-LOGIN_REDIRECT_URL = 'user_dashboard_redirect'
+LOGIN_REDIRECT_URL = reverse_lazy('user_dashboard_redirect')
 LOGOUT_REDIRECT_URL = 'login'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',

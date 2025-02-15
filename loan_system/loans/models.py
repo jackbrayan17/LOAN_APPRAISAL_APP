@@ -27,7 +27,7 @@ class Institution(models.Model):
 # Branch Manager Model
 class BranchManager(models.Model):
     user = models.OneToOneField('loans.User', on_delete=models.CASCADE, related_name='branch_manager')
-    institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.user.username
@@ -35,7 +35,7 @@ class BranchManager(models.Model):
 # Loan Officer Model
 class LoanOfficer(models.Model):
     user = models.OneToOneField('loans.User', on_delete=models.CASCADE, related_name='loan_officer')
-    institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE,null=True, blank=True)
 
     def __str__(self):
         return self.user.username

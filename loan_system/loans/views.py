@@ -37,6 +37,9 @@ def dashboard(request):
             return redirect('loan_officer_dashboard', loan_type='WITHIN_SAVINGS')
         elif request.user.is_branch_manager:
             return redirect('branch_manager_dashboard')
+        elif request.user.is_institution:
+            return redirect('institution_dashboard')
+        
         else:
             return render(request, 'dashboard.html')
     else:
@@ -90,11 +93,9 @@ def loan_officer_dashboard(request, loan_type):
     else:
         form = LoanForm(initial={'loan_type': loan_type})
 
-    return render(request, 'loans/loan_officer_dashboard.html', {'form': form, 'credit_score': credit_score})
+    return render(request, 'loan_form.html', {'form': form, 'credit_score': credit_score})
 
-def dashboard(request):
-    return render(request, 'dashboard.html')
 from .models import Loan
 def branch_manager_dashboard(request):
     loans = Loan.objects.filter(status='SUBMITTED')
-    return render(request, 'loans/branch_manager_dashboard.html', {'loans': loans})
+    return render(request, 'branch_manager_dashboard.html', {'loans': loans})

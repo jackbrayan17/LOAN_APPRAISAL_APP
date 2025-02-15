@@ -13,12 +13,12 @@ def user_dashboard_redirect(request):
     # Redirect users to their respective dashboards based on their roles
     if request.user.is_authenticated:
         if request.user.is_loan_officer:
-            return redirect('loan_officer_dashboard')
+            return redirect('home')
         elif request.user.is_branch_manager:
             return redirect('branch_manager_dashboard')
         else:
             # Default redirect for non-specific users
-            return redirect('dashboard')  # A default dashboard view if needed
+            return redirect('home')  # A default dashboard view if needed
     else:
         return redirect('account_login')  # Redirect to login if not authenticated
 
