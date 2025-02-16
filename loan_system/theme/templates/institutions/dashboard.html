@@ -32,8 +32,70 @@
 
 
 <!-- Loans Table -->
-<div class="flex justify-between bg-white p-6 rounded-lg shadow-lg mb-6">
-    <h2 class="text-xl font-bold">Loans <span style="color: grey;">{{ loans|length }}</span></h2>
+<!-- Loans Table Header with Filters -->
+<div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+    <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold">Loans <span style="color: grey;">{{ loans|length }}</span></h2>
+    </div>
+
+    <!-- Filters Form -->
+    <!-- Loan Filters Form -->
+<form method="GET" class="bg-white p-4 rounded-lg shadow mb-6">
+    <div class="grid grid-cols-5 gap-4">
+        <!-- Start Date -->
+        <div>
+            <label class="block text-sm font-medium">Start Date:</label>
+            <input type="date" name="start_date" value="{{ request.GET.start_date }}" class="border rounded p-2 w-full">
+        </div>
+
+        <!-- End Date -->
+        <div>
+            <label class="block text-sm font-medium">End Date:</label>
+            <input type="date" name="end_date" value="{{ request.GET.end_date }}" class="border rounded p-2 w-full">
+        </div>
+
+        <!-- Loan Type -->
+        <div>
+            <label class="block text-sm font-medium">Loan Type:</label>
+            <select name="loan_type" class="border rounded p-2 w-full">
+                <option value="">All</option>
+                {% for type in loan_types %}
+                <option value="{{ type }}" {% if request.GET.loan_type == type %}selected{% endif %}>{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Loan Officer -->
+        <div>
+            <label class="block text-sm font-medium">Loan Officer:</label>
+            <select name="loan_officer" class="border rounded p-2 w-full">
+                <option value="">All</option>
+                {% for officer in loan_officers %}
+                <option value="{{ officer.user.id }}" {% if request.GET.loan_officer == officer.user.id|stringformat:"s" %}selected{% endif %}>
+                    {{ officer.user.username }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Status -->
+        <div>
+            <label class="block text-sm font-medium">Status:</label>
+            <select name="status" class="border rounded p-2 w-full">
+                <option value="">All</option>
+                {% for status in statuses %}
+                <option value="{{ status }}" {% if request.GET.status == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="mt-4 flex justify-end">
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Filter</button>
+        <a href="{% url 'institution_dashboard' %}" class="ml-4 text-red-500">Reset</a>
+    </div>
+</form>
+
 </div>
 
 <!-- Loans Table -->

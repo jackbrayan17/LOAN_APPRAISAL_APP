@@ -62,6 +62,11 @@ def home(request):
 from django.shortcuts import render, get_object_or_404
 from .models import LoanOfficer, Loan
 from .forms import LoanForm
+from datetime import timedelta
+from django.utils.timezone import now
+from django.shortcuts import render, get_object_or_404
+from .models import Loan, LoanOfficer
+from .forms import LoanForm
 
 def loan_officer_dashboard(request, loan_type):
     credit_score = None  # Default value if the form is not submitted
@@ -72,7 +77,7 @@ def loan_officer_dashboard(request, loan_type):
         
         if form.is_valid():
             cleaned_data = form.cleaned_data
-            
+
             # Ensure all values are safely converted to integers (default to 0 if None)
             def safe_int(value):
                 return int(value) if value is not None else 0
@@ -119,23 +124,39 @@ def loan_officer_dashboard(request, loan_type):
                 credit_conditions_score
             )
 
-            # Ensure the credit score does not exceed 100 (in case of overflow)
-            # credit_score = min(credit_score, 100)
-
-            # Save the Loan application with calculated credit score
+            # Assign Score Label
+            if credit_score <= 70:
+                score_label = "Disapproved, high probability of failure"
+            elif 71 <= credit_score <= 80:
+                score_label = "Approved but requires collateral, co-makers, savings, and close supervision"
+            elif 81 <= credit_score <= 90:
+                score_label = "Approved but needs collateral and close supervision"
+            elif 91 <= credit_score <= 100:
+                score_label = "Approved with or without collateral"
+            else:
+                score_label = "Unknown"
+            
+            # Save the Loan application with calculated credit score and score label
             loan = form.save(commit=False)
-            loan.loan_type = loan_type  # Assign loan type to the loan instance
-            loan.credit_score = credit_score  # Assign calculated credit score
+            loan.loan_type = loan_type  # Assign loan type
+            loan.credit_score = credit_score  # Assign calculated score
+            loan.score_label = score_label  # Assign score label
             loan.loan_officer = loan_officer  # Assign the authenticated loan officer
             loan.save()  # Save the loan to the database
 
-            # Render the result to the same form page with the calculated score
-            return render(request, 'loan_form.html', {'form': form, 'credit_score': credit_score})
-    
+            # Render the result with the calculated score
+            return render(request, 'loan_form.html', {
+                'form': form, 
+                'credit_score': credit_score,
+                'score_label': score_label
+            })
+
     else:
         form = LoanForm(initial={'loan_type': loan_type})  # Initialize form with loan type
 
     return render(request, 'loan_form.html', {'form': form, 'credit_score': credit_score})
+
+
 from .models import Loan
 @login_required
 def branch_manager_dashboard(request):
@@ -158,12 +179,25 @@ def branch_manager_dashboard(request):
 @login_required
 def validate_loan(request, loan_id):
     loan = get_object_or_404(Loan, id=loan_id)
+
     if request.user.is_branch_manager and loan.status == 'SUBMITTED':
         loan.status = 'VALIDATED'
-        loan.save()
-        return redirect('branch_manager_dashboard')  # Redirect to dashboard after validating
-    return redirect('account_login')
+        loan.approval_date = now().date()  # Set approval date
 
+        # ✅ Correctly calculate estimated repayment date
+        estimated_repayment_date = loan.approval_date + timedelta(days=loan.repayment_period * 30)
+        actual_repayment_date = now().date()  # Current date
+
+        # ✅ Compare dates correctly
+        if actual_repayment_date > estimated_repayment_date:
+            loan.delay_days += (actual_repayment_date - estimated_repayment_date).days  # Add overdue days
+        else:
+            loan.delay_days = 0  # No delay
+
+        loan.save()
+        return redirect('branch_manager_dashboard')  # Redirect to dashboard after validation
+
+    return redirect('account_login')
 # Reject Loan
 @login_required
 def reject_loan(request, loan_id):

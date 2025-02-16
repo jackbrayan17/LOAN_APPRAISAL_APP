@@ -171,22 +171,50 @@ def deactivate_user(request, user_id):
     user.is_active = False
     user.save()
     return redirect('institution_dashboard')
+from django.shortcuts import render, redirect
+from django.utils.dateparse import parse_date
+
 def institution_dashboard(request):
     if request.user.is_authenticated and request.user.is_institution:
         # Fetch the institution related to the logged-in user
         institution = request.user.institution
-        
-        # Fetch loan officers related to this institution
+
+        # Fetch loan officers and branch managers related to this institution
         loan_officers = LoanOfficer.objects.filter(institution=institution)
         branch_manager = BranchManager.objects.filter(institution=institution)
-        
-        # Fetch loans related to the loan officers of this institution
+
+        # Fetch all loans related to this institution
         loans = Loan.objects.filter(loan_officer__institution=institution)
-        
+
+        # Get filter parameters from request
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        loan_type = request.GET.get('loan_type')
+        loan_officer = request.GET.get('loan_officer')
+        status = request.GET.get('status')
+
+        # Apply filters
+        if start_date:
+            loans = loans.filter(approval_date__gte=parse_date(start_date))
+        if end_date:
+            loans = loans.filter(approval_date__lte=parse_date(end_date))
+        if loan_type:
+            loans = loans.filter(loan_type=loan_type)
+        if loan_officer:
+            loans = loans.filter(loan_officer__user__id=loan_officer)
+        if status:
+            loans = loans.filter(status=status)
+
+        # Get distinct values for dropdown filters
+        loan_types = Loan.objects.filter(loan_officer__institution=institution).values_list('loan_type', flat=True).distinct()
+        statuses = Loan.objects.filter(loan_officer__institution=institution).values_list('status', flat=True).distinct()
+
         return render(request, 'institutions/dashboard.html', {
             'branch_manager': branch_manager,
             'loan_officers': loan_officers,
             'loans': loans,
+            'loan_types': loan_types,
+            'statuses': statuses,  # Pass statuses for filtering
         })
-    else:
-        return redirect('account_login')  # Or another appropriate redirect
+    
+    return redirect('account_login')  # Redirect if not authenticated or not an institution user
