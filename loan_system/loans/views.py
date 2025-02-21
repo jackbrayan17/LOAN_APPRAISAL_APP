@@ -77,7 +77,6 @@ def loan_officer_dashboard(request, loan_type):
         
         if form.is_valid():
             cleaned_data = form.cleaned_data
-
             # Ensure all values are safely converted to integers (default to 0 if None)
             def safe_int(value):
                 return int(value) if value is not None else 0
@@ -90,9 +89,9 @@ def loan_officer_dashboard(request, loan_type):
                 (5 if cleaned_data.get('community_reputation') else 2 if cleaned_data.get('community_reputation') == 'average' else 0) +
                 (2 if cleaned_data.get('community_leader') else 0) +
                 (2 if cleaned_data.get('community_duration') == 'more_than_2' else 1) +
-                (1 if cleaned_data.get('family_relationship') == 'good' else 0.5 if cleaned_data.get('family_relationship') == 'average' else 0) +
-                (1 if cleaned_data.get('workplace_relationship') == 'good' else 0.5 if cleaned_data.get('workplace_relationship') == 'average' else 0) +
-                (1 if cleaned_data.get('community_relationship') == 'good' else 0.5 if cleaned_data.get('community_relationship') == 'average' else 0)
+                (2 if cleaned_data.get('family_relationship') == 'good' else 1 if cleaned_data.get('family_relationship') == 'average' else 0.5) +
+                (2 if cleaned_data.get('workplace_relationship') == 'good' else 1 if cleaned_data.get('workplace_relationship') == 'average' else 0.5) +
+                (2 if cleaned_data.get('community_relationship') == 'good' else 1 if cleaned_data.get('community_relationship') == 'average' else 0.5)
             )
 
             capacity_to_repay_score = (
@@ -139,16 +138,27 @@ def loan_officer_dashboard(request, loan_type):
             # Save the Loan application with calculated credit score and score label
             loan = form.save(commit=False)
             loan.loan_type = loan_type  # Assign loan type
+            loan.capacity_to_repay_score = capacity_to_repay_score
+            loan.capital_status_score = capital_status_score
+            loan.character_score = character_score
+            loan.collateral_score = collateral_score
+            loan.credit_conditions_score = credit_conditions_score
             loan.credit_score = credit_score  # Assign calculated score
             loan.score_label = score_label  # Assign score label
             loan.loan_officer = loan_officer  # Assign the authenticated loan officer
+            
             loan.save()  # Save the loan to the database
 
             # Render the result with the calculated score
             return render(request, 'loan_form.html', {
                 'form': form, 
                 'credit_score': credit_score,
-                'score_label': score_label
+                'score_label': score_label, 
+                'credit_conditions_score': credit_conditions_score,
+                'collateral_score':collateral_score,
+                'character_score':character_score,
+                'capital_status_score':capital_status_score,
+                'capacity_to_repay_score':capacity_to_repay_score,
             })
 
     else:
@@ -187,8 +197,6 @@ def validate_loan(request, loan_id):
         # ✅ Correctly calculate estimated repayment date
         estimated_repayment_date = loan.approval_date + timedelta(days=loan.repayment_period * 30)
         actual_repayment_date = now().date()  # Current date
-
-        # ✅ Compare dates correctly
         if actual_repayment_date > estimated_repayment_date:
             loan.delay_days += (actual_repayment_date - estimated_repayment_date).days  # Add overdue days
         else:

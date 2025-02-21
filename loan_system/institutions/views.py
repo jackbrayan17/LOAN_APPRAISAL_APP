@@ -53,7 +53,7 @@ def download_pdf(request, loan_id):
     
     # Title
     p.setFont("Helvetica-Bold", 16)
-    p.drawString(100, 750, f"Loan Information Report for {loan.member_full_name}")
+    p.drawString(100, 750, f"Loan Information Report for {loan.member_full_name} by {loan.loan_officer}")
     
     # Loan Details
     p.setFont("Helvetica", 12)
@@ -65,13 +65,13 @@ def download_pdf(request, loan_id):
     p.drawString(100, 620, f"Delay Days: {loan.delay_days}")
 
     # Appraisal Elements
-    p.drawString(100, 580, "Appraisal Elements:")
-    p.drawString(120, 560, f"Character Score: {loan.character_score}")
-    p.drawString(120, 540, f"Capacity to Repay Score: {loan.capacity_to_repay_score}")
-    p.drawString(120, 520, f"Capital Status Score: {loan.capital_status_score}")
-    p.drawString(120, 500, f"Collateral Score: {loan.collateral_score}")
-    p.drawString(120, 480, f"Credit Conditions Score: {loan.credit_conditions_score}")
-    p.drawString(120, 460, f"Total Appraisal Score: {loan.total_appraisal_score}")
+    p.drawString(100, 580, "Appraisal Elements Score:")
+    p.drawString(120, 560, f"Character Score: {loan.character_score}/30")
+    p.drawString(120, 540, f"Capacity to Repay Score: {loan.capacity_to_repay_score}/40")
+    p.drawString(120, 520, f"Capital Status Score: {loan.capital_status_score}/10")
+    p.drawString(120, 500, f"Collateral Score: {loan.collateral_score}/5")
+    p.drawString(120, 480, f"Credit Conditions Score: {loan.credit_conditions_score}/5")
+
     
     # Credit Score
     p.drawString(100, 420, f"Credit Score: {loan.credit_score}")
@@ -92,7 +92,7 @@ def download_pdf(request, loan_id):
     # Closing statement
     p.setFont("Helvetica-Bold", 14)
     p.drawString(100, 140, "This report is generated for financial analysis purposes.")
-    p.drawString(100, 120, "For any inquiries, please contact your loan officer.")
+    p.drawString(100, 120, f"For any inquiries, please contact your loan officer.")
 
     p.showPage()
     p.save()

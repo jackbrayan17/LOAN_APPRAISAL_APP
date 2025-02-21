@@ -146,44 +146,80 @@ class Loan(models.Model):
     co_maker_pledge = models.BooleanField(default=False, verbose_name="Co-maker willing to pledge savings/shares")
     spouse_consent = models.BooleanField(default=False, verbose_name="Spouse has given consent for the loan")
     job_health_hazards = models.BooleanField(default=False, verbose_name="Job poses no health hazards")
+    # def calculate_scores(self):
+    #     """Calculate and update scores before saving."""
+    #     self.character_score = (
+    #         (5 if self.has_good_repayment_history else 0) +
+    #         (5 if self.has_good_reputation == 'good' else 2 if self.has_good_reputation == 'average' else 0) +
+    #         (5 if not self.blacklisted else 0) +
+    #         (5 if self.community_reputation == 'good' else 2 if self.community_reputation == 'average' else 0) +
+    #         (2 if self.community_leader else 0) +
+    #         (2 if self.community_duration == 'more_than_2' else 1) +
+    #         (1 if self.family_relationship == 'good' else 0.5 if self.family_relationship == 'average' else 0) +
+    #         (1 if self.workplace_relationship == 'good' else 0.5 if self.workplace_relationship == 'average' else 0) +
+    #         (1 if self.community_relationship == 'good' else 0.5 if self.community_relationship == 'average' else 0)
+    #     )
 
-    def calculate_total_score(self):
-        """Calculates the total appraisal score based on different criteria."""
-        self.total_appraisal_score = (
-            self.character_score +
-            self.capacity_to_repay_score +
-            self.capital_status_score +
-            self.collateral_score +
-            self.credit_conditions_score
-        )
-        self.credit_score = min(self.total_appraisal_score, 100)  # Cap the credit score at 100
-        self.score_label = self.get_score_label()  # Update score label
-        self.save()
+    #     self.capacity_to_repay_score = (
+    #         (10 if self.has_stable_job else 0) +
+    #         (10 if self.stable_job_duration == 'more_than_5' else 5) +
+    #         (10 if self.regular_income_frequency == 'monthly' else 5 if self.regular_income_frequency == 'weekly' else 2) +
+    #         (10 if not self.has_other_loans else 0)
+    #     )
 
-    def calculate_delay_days(self):
-        """Calculates the number of delay days based on microfinance logic."""
-        if self.approval_date:
-            estimated_repayment_date = self.approval_date + timedelta(days=self.repayment_period * 30)
-            actual_repayment_date = now().date()
+    #     self.capital_status_score = (
+    #         (5 if self.maintains_savings else 0) +
+    #         (5 if self.has_sufficient_collateral else 0)
+    #     )
+
+    #     self.collateral_score = (
+    #         (5 if self.spouse_approval else 0)
+    #     )
+
+    #     self.credit_conditions_score = (
+    #         (5 if self.business_is_legal else 0)
+    #     )
+    #     self.total_appraisal_score = (
+    #         self.character_score +
+    #         self.capacity_to_repay_score +
+    #         self.capital_status_score +
+    #         self.collateral_score +
+    #         self.credit_conditions_score
+    #     )
+    #     self.credit_score = min(self.total_appraisal_score, 100)  # Cap the credit score at 100
+    #     self.score_label = self.get_score_label()  # Update score label
+    #     self.save()
+
+    # def save(self, *args, **kwargs):
+    #     self.calculate_scores()  # Ensure scores are updated before saving
+    #     super().save(*args, **kwargs)
+
+    # def calculate_delay_days(self):
+    #     """Calculates the number of delay days based on microfinance logic."""
+    #     if self.approval_date:
+    #         estimated_repayment_date = self.approval_date + timedelta(days=self.repayment_period * 30)
+    #         actual_repayment_date = now().date()
             
-            if actual_repayment_date > estimated_repayment_date:
-                self.delay_days = (actual_repayment_date - estimated_repayment_date).days
-            else:
-                self.delay_days = 0
+    #         if actual_repayment_date > estimated_repayment_date:
+    #             self.delay_days = (actual_repayment_date - estimated_repayment_date).days
+    #         else:
+    #             self.delay_days = 0
             
-            self.save()
+    #         self.save()
 
-    def get_score_label(self):
-        """Returns the score label based on the credit score."""
-        if self.credit_score <= 70:
-            return "Disapproved, high probability of failure"
-        elif 71 <= self.credit_score <= 80:
-            return "Approved but requires collateral, co-makers, savings, and close supervision"
-        elif 81 <= self.credit_score <= 90:
-            return "Approved but needs collateral and close supervision"
-        elif 91 <= self.credit_score <= 100:
-            return "Approved with or without collateral"
-        return "Unknown"
+    # def get_score_label(self):
+    #     """Returns the score label based on the credit score."""
+    #     if self.credit_score <= 70:
+    #         return "Disapproved, high probability of failure"
+    #     elif 71 <= self.credit_score <= 80:
+    #         return "Approved but requires collateral, co-makers, savings, and close supervision"
+    #     elif 81 <= self.credit_score <= 90:
+    #         return "Approved but needs collateral and close supervision"
+    #     elif 91 <= self.credit_score <= 100:
+    #         return "Approved with or without collateral"
+    #     return "Unknown"
 
     def __str__(self):
         return f"{self.member_full_name} - {self.loan_type} (Score: {self.credit_score}, Label: {self.score_label})"
+    
+    
