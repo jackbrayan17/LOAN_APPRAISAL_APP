@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from institutions.views import institution_dashboard, deactivate_user
 from loans.views import branch_manager_dashboard, loan_officer_dashboard
-from loans.views import validate_loan, reject_loan, loan_details
+from loans.views import submit_suggestion, validate_loan, reject_loan,regulation_page, loan_details
 from institutions.views import loan_details, download_excel, download_pdf
 def redirect_to_login(request):
     # Redirect to the login page if not authenticated
@@ -35,10 +35,11 @@ urlpatterns = [
     path('loan/<int:loan_id>/details/', loan_details, name='loan_details'),
     path('download/excel/<int:loan_id>/', download_excel, name='download_excel'),
     path('download/pdf/<int:loan_id>/', download_pdf, name='download_pdf'),
+    path('regulations/', regulation_page, name='regulations'),
     # Institution-related URLs
     path('institution/dashboard/', institution_dashboard, name='institution_dashboard'),
     path('institution/deactivate/<int:user_id>/', deactivate_user, name='deactivate_user'),
-
+    path('submit-suggestion/', submit_suggestion, name='submit_suggestion'),
     # Redirect to respective dashboards after login
     path('dashboard/', user_dashboard_redirect, name='user_dashboard_redirect'),
     path('branch-manager/dashboard/', branch_manager_dashboard, name='branch_manager_dashboard'),

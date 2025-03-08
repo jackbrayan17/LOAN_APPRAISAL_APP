@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+  <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-6">Liste des Articles</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Début des cartes -->
+            
+            <!-- Génération automatique des articles -->
+            
+            <!-- Articles de 1 à 32 -->
+            
+            <!-- Exemple de génération automatique des cartes -->
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const articlesContainer = document.querySelector(".grid");
+                    const articles = [
+                        "Microfinance Institutions shall classify record and provision loans held by clients and any counterparty under the conditions provided for in the Chart of Accounts of Microfinance Institutions (PCEMF) and this Regulation.",
+                        "Microfinance Institutions shall classify their loan portfolio as 'performing' and 'non-performing' loans. The classification of loans in the appropriate categories shall be carried out independently of the guarantees held.",
+                        "For the purposes of this Regulation, the term 'loan' shall refer to all commitments on the balance sheet and off-balance sheet held by a Microfinance Institution to counterparty (natural person or legal entity) in the form of: credits by disbursement or advances, regardless of their nature, form and term; irrevocable commitments by signature (such as guarantees, endorsements, acceptances, irrevocable financing commitments, etc.) in favour of another party; debt securities issued by the other party and held by the institution; leasing on movable and immovable property.",
+                        "Performing loans shall refer to loans whose repayment is made in accordance with the contractual provisions and which are held on other parties whose ability to honour all their current and future commitments raises no reason for concern.",
+                        "Non-performing loans shall consist of 'State-owed defaulted loans', 'unpaid loans' and 'bad loans'.",
+                        "Classification of non-performing loans shall be made based on the delay in repayment and other risk factors as determined by the supervisory authority.",
+                        "A loan shall be considered as 'unpaid' when the due date has passed, and no payment has been received for more than 90 days.",
+                        "A loan shall be classified as a 'bad loan' if the borrower is unable to repay, and the chances of recovery are minimal.",
+                        "The provisioning of loans shall be based on the classification of loans and the risks associated with each category.",
+                        "Each Microfinance Institution shall ensure adequate monitoring of loans to prevent delays in repayment.",
+                        "Institutions shall report their loan classifications to the regulatory authorities regularly.",
+                        "Collateral and guarantees held shall not affect the classification of a loan.",
+                        "Institutions shall set up risk assessment mechanisms to evaluate their loan portfolio.",
+                        "A borrower’s creditworthiness shall be regularly assessed to prevent excessive exposure to risk.",
+                        "Microfinance Institutions shall establish internal policies for loan management and classification.",
+                        "Provisioning levels shall be determined according to the risk profile of the loan portfolio.",
+                        "Loans restructured due to financial difficulties shall be classified under non-performing loans until the borrower demonstrates consistent repayment.",
+                        "Institutions must document the reasons for loan restructuring and inform the regulatory authorities.",
+                        "Loan write-offs must be approved by the board and reported to regulators.",
+                        "Each Microfinance Institution shall have a dedicated unit to manage non-performing loans.",
+                        "Risk mitigation strategies shall be put in place to minimize credit losses.",
+                        "Institutions shall provide training to staff on loan classification and risk management.",
+                        "Credit risk exposure shall be evaluated periodically to adjust risk strategies.",
+                        "The regulator shall conduct periodic reviews of loan classification and provisioning policies.",
+                        "Institutions must ensure transparency in their financial reporting regarding non-performing loans.",
+                        "Borrowers shall be informed of their loan classification and any implications for their credit rating.",
+                        "Early warning systems shall be established to detect potential loan defaults.",
+                        "Institutions shall maintain records of all classified loans for at least five years.",
+                        "Loans to related parties shall be subject to strict controls and reporting requirements.",
+                        "Any deviation from loan classification rules must be justified and approved by the regulator.",
+                        "Sanctions shall be applied for non-compliance with loan classification and provisioning rules."
+                    ];
+                    
+                    for (let i = 0; i < articles.length; i++) {
+                        const card = document.createElement("div");
+                        card.className = "bg-white p-4 rounded-lg shadow-md";
+                        card.innerHTML = `
+                            <h2 class="text-xl font-semibold">R-2017/07 ART. ${i + 1}</h2>
+                            <p class="text-gray-600 mt-2">${articles[i]}</p>
+                        `;
+                        articlesContainer.appendChild(card);
+                    }
+                });
+            </script>
+        </div>
+    </div>
+{% endblock %}

@@ -1,6 +1,11 @@
 from django import forms
 from .models import Loan
+from .models import Suggestion
 
+class SuggestionForm(forms.ModelForm):
+    class Meta:
+        model = Suggestion
+        fields = ['suggestion_text']
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))

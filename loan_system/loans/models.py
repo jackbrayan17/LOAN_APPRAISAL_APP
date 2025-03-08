@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.utils.timezone import now
 from datetime import timedelta
+from django.utils import timezone
 # Custom User Model
 class User(AbstractUser):
     is_admin = models.BooleanField(default=False)
@@ -42,6 +43,14 @@ class LoanOfficer(models.Model):
 
     def __str__(self):
         return self.user.username
+
+class Suggestion(models.Model):
+    user = models.ForeignKey('loans.User', on_delete=models.CASCADE, related_name='suggestions')
+    suggestion_text = models.TextField()
+    submitted_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Suggestion by {self.user.username} on {self.submitted_at.strftime('%Y-%m-%d %H:%M:%S')}"
 
 # Customer Model
 class Customer(models.Model):

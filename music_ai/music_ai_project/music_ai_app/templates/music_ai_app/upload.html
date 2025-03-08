@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold text-center mb-4 text-gray-800">Upload an Image</h2>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- Image Upload Field -->
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-semibold mb-1">Select an Image:</label>
+                <input type="file" name="image" 
+                    class="border border-gray-300 rounded-lg p-2 focus:ring focus:ring-blue-300">
+            </div>
+
+            <!-- Genre Selection -->
+            <div class="flex flex-col">
+                <label class="text-gray-700 font-semibold mb-1">Select Genre(s):</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="genre" value="pop" class="form-checkbox text-blue-500">
+                        <span class="text-gray-700">Pop</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="genre" value="rock" class="form-checkbox text-blue-500">
+                        <span class="text-gray-700">Rock</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="genre" value="hiphop" class="form-checkbox text-blue-500">
+                        <span class="text-gray-700">Hip Hop</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="genre" value="jazz" class="form-checkbox text-blue-500">
+                        <span class="text-gray-700">Jazz</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="genre" value="classical" class="form-checkbox text-blue-500">
+                        <span class="text-gray-700">Classical</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="genre" value="electronic" class="form-checkbox text-blue-500">
+                        <span class="text-gray-700">Electronic</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="genre" value="afrobeats" class="form-checkbox text-blue-500">
+                        <span class="text-gray-700">Afrobeats</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" 
+                class="w-full bg-blue-500 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 transition duration-300">
+                Upload Image
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

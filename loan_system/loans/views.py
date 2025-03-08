@@ -2,10 +2,23 @@ from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
-from .forms import LoginForm
+from .forms import LoginForm, SuggestionForm
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Loan, LoanOfficer
 from django.contrib.auth.decorators import login_required
+
+def submit_suggestion(request):
+    if request.method == 'POST':
+        form = SuggestionForm(request.POST)
+        if form.is_valid():
+            suggestion = form.save(commit=False)
+            suggestion.user = request.user  # Set the user to the currently logged-in user
+            suggestion.save()
+            return redirect('submit_suggestion')  # Redirect to a success page or similar
+    else:
+        form = SuggestionForm()
+
+    return render(request, 'submit_suggestion.html', {'form': form})
 
 def custom_login(request):
     if request.method == 'POST':
@@ -47,6 +60,9 @@ def dashboard(request):
             return render(request, 'dashboard.html')
     else:
         return redirect('login')  # Redirect to login if the user is not logged in
+
+def regulation_page(request):
+    return render(request, 'regulation.html')
 
 
 def home(request):

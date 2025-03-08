@@ -18,9 +18,15 @@
             </div>
             <div>
                 {% if user.is_authenticated %}
-                    <span class="text-white">Welcome, {{ user.username }}</span>
-                    <a href="{% url 'account_logout' %}">Logout</a>
-                {% else %}
+                    <span class="text-white">Welcome, {{ user.username }}</span> |
+                    <a href="{% url 'account_logout' %}">Logout</a> |
+                    <a href="{% url 'regulations' %}">Regulations</a> |
+                    
+                    <a href="{% url 'submit_suggestion' %}">Suggestions</a> |
+                    
+                    
+
+                    {% else %}
                     <a href="{% url 'account_login' %}" class="text-white">Login</a>
                     <a href="{% url 'account_signup' %}" class="text-white ml-4">Sign Up</a>
                 {% endif %}
